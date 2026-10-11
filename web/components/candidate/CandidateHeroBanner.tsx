@@ -10,7 +10,6 @@ import {
   Sparkles,
   ClipboardList,
   X,
-  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -271,36 +270,17 @@ export function CandidateHeroBanner({
           </span>
         </div>
 
-        {/* Ballot Paper Specimen Card Container */}
-        <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100/80 border border-slate-200 p-1.5 sm:p-3 shadow-inner group">
-          <div className="relative w-full aspect-[546/187] rounded-xl overflow-hidden bg-white shadow-2xs border border-slate-200/70">
-            <Image
-              src="/ballot-candidate-guide.png"
-              alt="Ballot Paper Specimen - Shashi Hulikuntemutt Sl. No. 1"
-              fill
-              priority
-              unoptimized
-              sizes="(max-width: 640px) 100vw, 672px"
-              className="object-contain"
-            />
-          </div>
-        </div>
-
-        {/* Explanatory Voting Guidance Banner */}
-        <div className="rounded-2xl bg-blue-50/90 border border-blue-200/80 p-3 sm:p-3.5 space-y-2">
-          <div className="flex items-start gap-2.5">
-            <div className="mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-black shrink-0 shadow-2xs">
-              1
-            </div>
-            <p className="text-xs sm:text-sm font-bold text-blue-950 leading-snug">
-              {t.ballotInstructionText}
-            </p>
-          </div>
-
-          <div className="pt-1.5 border-t border-blue-200/60 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-amber-900 bg-amber-50/70 px-2.5 py-1.5 rounded-xl border border-amber-200/60">
-            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-            <span>{t.ballotCrucialNote}</span>
-          </div>
+        {/* Prominent, Large & Perfectly Aligned Ballot Paper Specimen */}
+        <div className="relative w-full aspect-[546/187] rounded-2xl overflow-hidden bg-white shadow-soft-xs border border-slate-200/90">
+          <Image
+            src="/ballot-candidate-guide.png"
+            alt="Ballot Paper Specimen - Shashi Hulikuntemutt Sl. No. 1"
+            fill
+            priority
+            unoptimized
+            sizes="(max-width: 640px) 100vw, 672px"
+            className="object-contain w-full h-full"
+          />
         </div>
       </div>
     </div>
