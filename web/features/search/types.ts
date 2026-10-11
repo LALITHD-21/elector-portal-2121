@@ -5,7 +5,7 @@ export type SearchQueryType = 'epic' | 'mobile' | 'name' | 'filter' | 'fuzzy' | 
 export interface SearchResultRow {
   id: number;
   serial_number: number | null;
-  epic_number: string;
+  epic_number: string | null;
   name: string;
   relative_name: string | null;
   age: number | null;

@@ -15,28 +15,33 @@ export interface SearchRowProps {
 
 function HighlightText({ text, query }: { text: string | null | undefined; query: string }) {
   if (!text) return null;
-  const trimmed = query.trim();
-  if (!trimmed || trimmed.length < 2) return <span>{text}</span>;
+  const str = String(text);
+  const trimmed = (query || '').trim();
+  if (!trimmed || trimmed.length < 2) return <span>{str}</span>;
 
-  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
+  try {
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = str.split(new RegExp(`(${escaped})`, 'gi'));
 
-  return (
-    <span>
-      {parts.map((part, idx) =>
-        part.toLowerCase() === trimmed.toLowerCase() ? (
-          <mark
-            key={idx}
-            className="bg-blue-100 text-blue-950 rounded-xs px-0.5 font-bold"
-          >
-            {part}
-          </mark>
-        ) : (
-          <span key={idx}>{part}</span>
-        )
-      )}
-    </span>
-  );
+    return (
+      <span>
+        {parts.map((part, idx) =>
+          part.toLowerCase() === trimmed.toLowerCase() ? (
+            <mark
+              key={idx}
+              className="bg-blue-100 text-blue-950 rounded-xs px-0.5 font-bold"
+            >
+              {part}
+            </mark>
+          ) : (
+            <span key={idx}>{part}</span>
+          )
+        )}
+      </span>
+    );
+  } catch {
+    return <span>{str}</span>;
+  }
 }
 
 export function SearchRow({ row, searchQuery, onSelect }: SearchRowProps) {
@@ -75,7 +80,7 @@ export function SearchRow({ row, searchQuery, onSelect }: SearchRowProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h4 className="text-sm sm:text-base font-black text-slate-900 group-hover:text-blue-700 transition truncate leading-snug">
-              <HighlightText text={row.name} query={searchQuery} />
+              <HighlightText text={row.name || '—'} query={searchQuery} />
             </h4>
             <p className="text-[11.5px] text-slate-600 font-medium truncate mt-0.5">
               {t.fatherSpouseLabel} <HighlightText text={row.relative_name || '—'} query={searchQuery} />
