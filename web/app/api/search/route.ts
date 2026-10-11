@@ -66,15 +66,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { q, mobile, part, ac, district, taluk, village, fuzzy, page, pageSize } = parseResult.data;
+  const { q, relativeName, mobile, part, ac, district, taluk, village, fuzzy, page, pageSize } = parseResult.data;
 
   try {
     const supabase = createAdminClient();
 
     // 4. Smart Query Router:
-    // Determine query strategy: EPIC -> Mobile -> Name -> Booth -> Filter-only
+    // Determine query strategy: EPIC -> Mobile -> Relative -> Name -> Booth -> Filter-only
     let queryType: SearchQueryType = 'filter';
     const trimmedQ = q.trim();
+    const trimmedRel = relativeName.trim();
     const normalizedQEpic = normalizeEpic(trimmedQ);
 
     // Columns to retrieve for Search Result Row (Caste is omitted - aggregate only)
@@ -121,7 +122,41 @@ export async function GET(request: NextRequest) {
       // Match on sanitized whatsapp_mob
       query = query.ilike('whatsapp_mob', `%${phoneDigits}%`);
     }
-    // Mode C: Name or Location text search (with optional fuzzy transliteration expansion)
+    // Mode C1: Dedicated Relative / Father / Husband Name search entered
+    else if (trimmedRel.length > 0) {
+      const hasAnyFilter = Boolean(part || ac || district || taluk || village);
+      if (trimmedRel.length < 2 && trimmedQ.length < 2 && !hasAnyFilter) {
+        return NextResponse.json({
+          rows: [],
+          total: 0,
+          page,
+          pageSize,
+          queryType: 'name',
+          durationMs: Math.round(performance.now() - startTime),
+          boothInfo: null,
+        });
+      }
+
+      queryType = 'name';
+
+      if (trimmedQ.length > 0) {
+        // User entered both Elector Name AND Relative Name (e.g. name = Sushma, relative = Satyamurthy)
+        const qNoSpace = trimmedQ.replace(/\s+/g, '');
+        if (qNoSpace !== trimmedQ && qNoSpace.length >= 2) {
+          query = query
+            .or(`name.ilike.%${trimmedQ}%,name.ilike.%${qNoSpace}%`)
+            .ilike('relative_name', `%${trimmedRel}%`);
+        } else {
+          query = query
+            .ilike('name', `%${trimmedQ}%`)
+            .ilike('relative_name', `%${trimmedRel}%`);
+        }
+      } else {
+        // User entered only Relative Name (e.g. relative = Satyamurthy)
+        query = query.ilike('relative_name', `%${trimmedRel}%`);
+      }
+    }
+    // Mode C2: Name or Location text search in main bar (with intelligent relative name cross-matching & fuzzy)
     else if (trimmedQ.length > 0) {
       // Guard against slow 1-character full-table scans across 192k records unless filtered
       const hasAnyFilter = Boolean(part || ac || district || taluk || village);
@@ -183,7 +218,28 @@ export async function GET(request: NextRequest) {
           `name.ilike.%${trimmedQ}%,name.ilike.%${canonicalTerm}%,relative_name.ilike.%${trimmedQ}%,relative_name.ilike.%${canonicalTerm}%`
         );
       } else {
-        query = query.or(`name.ilike.%${trimmedQ}%,relative_name.ilike.%${trimmedQ}%`);
+        // Intelligent cross-matching: if user typed multiple words (e.g. "Sushma Satyamurthy"),
+        // check whether one word matches the elector's name and another matches the relative's name:
+        const words = trimmedQ.split(/\s+/).filter(w => w.length >= 2);
+        const qNoSpace = trimmedQ.replace(/\s+/g, '');
+        if (words.length >= 2) {
+          const [w1, w2] = words;
+          const multiOr = [
+            `name.ilike.%${trimmedQ}%`,
+            `relative_name.ilike.%${trimmedQ}%`,
+            `name.ilike.%${qNoSpace}%`,
+            `and(name.ilike.%${w1}%,relative_name.ilike.%${w2}%)`,
+            `and(name.ilike.%${w2}%,relative_name.ilike.%${w1}%)`,
+          ];
+          if (words.length >= 3) {
+            const wLast = words[words.length - 1];
+            multiOr.push(`and(name.ilike.%${w1}%,relative_name.ilike.%${wLast}%)`);
+            multiOr.push(`and(name.ilike.%${wLast}%,relative_name.ilike.%${w1}%)`);
+          }
+          query = query.or(multiOr.join(','));
+        } else {
+          query = query.or(`name.ilike.%${trimmedQ}%,relative_name.ilike.%${trimmedQ}%`);
+        }
       }
     }
     // Mode D: Pure Booth Browse mode

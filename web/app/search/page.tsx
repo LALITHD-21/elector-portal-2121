@@ -27,6 +27,7 @@ function SearchPageContent() {
     error,
     handleQueryChange,
     handleFilterChange,
+    handleRelativeNameChange,
     handleToggleFuzzy,
     handleClearFilters,
     handleClearAll,
@@ -36,6 +37,7 @@ function SearchPageContent() {
 
   const hasQueryOrFilter = Boolean(
     query.trim() ||
+      filters.relativeName?.trim() ||
       filters.part ||
       filters.ac ||
       filters.district ||
@@ -144,19 +146,21 @@ function SearchPageContent() {
       <main className="relative z-10 flex-1 flex flex-col items-center justify-start px-3.5 sm:px-6 lg:px-8 pt-2.5 sm:pt-6 pb-6 max-w-5xl w-full mx-auto space-y-4 sm:space-y-5">
         {/* 1. Executive Candidate Profile Banner & Clean Search Card */}
         <CandidateHeroBanner
-        onRequestAddVoter={() => {
-          setRequestModalMode('add');
-          setIsRequestModalOpen(true);
-        }}
-        candidateName="SHASHI HULIKUNTEMUTT"
-        candidateRole="INC Candidate"
-        constituencyTitle="South-East Graduates' Constituency, Karnataka"
-        voterCountText="1,92,696 graduate voters listed"
-        candidatePhotoUrl="/candidate-avatar.jpg"
-        partyLogoUrl="/inc-logo.png"
-        searchQuery={query}
-        onSearchChange={handleQueryChange}
-      />
+          onRequestAddVoter={() => {
+            setRequestModalMode('add');
+            setIsRequestModalOpen(true);
+          }}
+          candidateName="SHASHI HULIKUNTEMUTT"
+          candidateRole="INC Candidate"
+          constituencyTitle="South-East Graduates' Constituency, Karnataka"
+          voterCountText="1,92,696 graduate voters listed"
+          candidatePhotoUrl="/candidate-avatar.jpg"
+          partyLogoUrl="/inc-logo.png"
+          searchQuery={query}
+          onSearchChange={handleQueryChange}
+          relativeNameFilter={filters.relativeName || ''}
+          onRelativeNameChange={handleRelativeNameChange}
+        />
 
       {/* 2. Directly Under Candidate Hero: Advanced Constituency & Booth Filters */}
       <div className="w-full max-w-2xl mx-auto space-y-3">

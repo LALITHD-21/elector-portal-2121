@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Download,
@@ -9,6 +9,7 @@ import {
   Check,
   Sparkles,
   ClipboardList,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -45,7 +46,13 @@ export function CandidateHeroBanner({
   relativeNameFilter = '',
   onRelativeNameChange,
 }: CandidateHeroBannerProps) {
-  const [showRelativeInput, setShowRelativeInput] = useState(false);
+  const [showRelativeInput, setShowRelativeInput] = useState(Boolean(relativeNameFilter));
+
+  useEffect(() => {
+    if (relativeNameFilter && !showRelativeInput) {
+      setShowRelativeInput(true);
+    }
+  }, [relativeNameFilter, showRelativeInput]);
   const { language, toggleLanguage, t } = useLanguage();
 
   const displayName =
@@ -197,21 +204,38 @@ export function CandidateHeroBanner({
         <div className="pt-0.5">
           <button
             type="button"
-            onClick={() => setShowRelativeInput(!showRelativeInput)}
+            onClick={() => {
+              if (showRelativeInput) {
+                setShowRelativeInput(false);
+                onRelativeNameChange?.('');
+              } else {
+                setShowRelativeInput(true);
+              }
+            }}
             className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 hover:text-blue-800 transition"
           >
             <span>{showRelativeInput ? t.hideRelativeBtn : t.addRelativeBtn}</span>
           </button>
 
           {showRelativeInput && (
-            <div className="mt-2 animate-fadeIn">
+            <div className="mt-2 animate-fadeIn relative">
               <input
                 type="text"
                 value={relativeNameFilter}
                 onChange={(e) => onRelativeNameChange?.(e.target.value)}
                 placeholder={t.relativePlaceholder}
-                className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3.5 py-2.5 pr-8 text-xs font-semibold text-slate-900 placeholder:text-slate-400 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
               />
+              {relativeNameFilter && (
+                <button
+                  type="button"
+                  onClick={() => onRelativeNameChange?.('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-full transition"
+                  aria-label="Clear relative name"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -19,6 +19,7 @@ export function useSearch() {
 
   // Read initial values from URL search params
   const initialQ = searchParams.get('q') || '';
+  const initialRelativeName = searchParams.get('relativeName') || searchParams.get('relative') || '';
   const initialPart = searchParams.get('part') || '';
   const initialAc = searchParams.get('ac') || '';
   const initialDistrict = searchParams.get('district') || '';
@@ -35,6 +36,7 @@ export function useSearch() {
     taluk: initialTaluk,
     village: initialVillage,
     fuzzy: initialFuzzy,
+    relativeName: initialRelativeName,
   });
   const [page, setPage] = useState(initialPage);
 
@@ -64,6 +66,7 @@ export function useSearch() {
       if (currentFilters.district) params.set('district', currentFilters.district);
       if (currentFilters.taluk) params.set('taluk', currentFilters.taluk);
       if (currentFilters.village) params.set('village', currentFilters.village);
+      if (currentFilters.relativeName) params.set('relativeName', currentFilters.relativeName);
       if (currentFilters.fuzzy) params.set('fuzzy', 'true');
       if (currentPage > 1) params.set('page', String(currentPage));
 
@@ -92,12 +95,14 @@ export function useSearch() {
       }
 
       const trimmed = searchQuery.trim();
+      const trimmedRel = (searchFilters.relativeName || '').trim();
       const hasFilter = Boolean(
         searchFilters.part ||
           searchFilters.ac ||
           searchFilters.district ||
           searchFilters.taluk ||
-          searchFilters.village
+          searchFilters.village ||
+          trimmedRel
       );
 
       // If empty query and no filter, clear results
@@ -138,6 +143,7 @@ export function useSearch() {
       try {
         const params = new URLSearchParams();
         if (trimmed) params.set('q', trimmed);
+        if (trimmedRel) params.set('relativeName', trimmedRel);
         if (searchFilters.part) params.set('part', searchFilters.part);
         if (searchFilters.ac) params.set('ac', searchFilters.ac);
         if (searchFilters.district) params.set('district', searchFilters.district);
@@ -229,13 +235,19 @@ export function useSearch() {
     handleFilterChange('fuzzy', nextFuzzy);
   };
 
+  const handleRelativeNameChange = (val: string) => {
+    handleFilterChange('relativeName', val);
+  };
+
   const handleClearFilters = () => {
     const emptyFilters: SearchFiltersState = {
       part: '',
       ac: '',
       district: '',
+      taluk: '',
       village: '',
       fuzzy: false,
+      relativeName: '',
     };
     setFilters(emptyFilters);
     setPage(1);
@@ -276,6 +288,7 @@ export function useSearch() {
     try {
       const params = new URLSearchParams();
       if (query.trim()) params.set('q', query.trim());
+      if (filters.relativeName) params.set('relativeName', filters.relativeName);
       if (filters.part) params.set('part', filters.part);
       if (filters.ac) params.set('ac', filters.ac);
       if (filters.district) params.set('district', filters.district);
@@ -316,7 +329,8 @@ export function useSearch() {
       initialDistrict ||
       initialTaluk ||
       initialVillage ||
-      initialFuzzy
+      initialFuzzy ||
+      initialRelativeName
     ) {
       executeSearch(
         initialQ,
@@ -327,6 +341,7 @@ export function useSearch() {
           taluk: initialTaluk,
           village: initialVillage,
           fuzzy: initialFuzzy,
+          relativeName: initialRelativeName,
         },
         initialPage
       );
@@ -337,6 +352,7 @@ export function useSearch() {
   return {
     query,
     filters,
+    relativeNameFilter: filters.relativeName || '',
     page,
     pageSize,
     results,
@@ -350,6 +366,7 @@ export function useSearch() {
     totalPages: Math.ceil(total / pageSize),
     handleQueryChange,
     handleFilterChange,
+    handleRelativeNameChange,
     handleToggleFuzzy,
     handleClearFilters,
     handleClearAll,

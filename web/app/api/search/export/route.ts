@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { q, mobile, part, ac, district, village, pageSize } = parseResult.data;
+  const { q, relativeName, mobile, part, ac, district, taluk, village, pageSize } = parseResult.data;
 
   try {
     const supabase = createAdminClient();
@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
     `);
 
     const trimmedQ = q.trim();
+    const trimmedRel = relativeName.trim();
     const normalizedEpic = normalizeEpic(trimmedQ);
 
     if (isValidEpic(normalizedEpic)) {
@@ -63,11 +64,18 @@ export async function GET(request: NextRequest) {
     } else if (/^\d{10}$/.test(trimmedQ) || (mobile && /^\d{10}$/.test(mobile))) {
       const phoneDigits = /^\d{10}$/.test(trimmedQ) ? trimmedQ : mobile.replace(/\D/g, '');
       query = query.ilike('whatsapp_mob', `%${phoneDigits}%`);
+    } else if (trimmedRel.length > 0) {
+      if (trimmedQ.length > 0) {
+        query = query.ilike('name', `%${trimmedQ}%`).ilike('relative_name', `%${trimmedRel}%`);
+      } else {
+        query = query.ilike('relative_name', `%${trimmedRel}%`);
+      }
     } else if (trimmedQ.length > 0) {
       query = query.or(`name.ilike.%${trimmedQ}%,relative_name.ilike.%${trimmedQ}%`);
     }
 
     if (district) query = query.eq('district', district);
+    if (taluk) query = query.ilike('taluk', `%${taluk}%`);
     if (ac) query = query.eq('ac_name', ac);
     if (part) query = query.eq('part_number', part);
     if (village) query = query.ilike('village', `%${village}%`);

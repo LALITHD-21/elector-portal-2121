@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const searchQuerySchema = z.object({
   q: z.string().trim().optional().default(''),
+  relativeName: z.string().trim().optional().default(''),
   mobile: z.string().trim().regex(/^\d{0,15}$/, 'Invalid mobile digits').optional().default(''),
   part: z.string().trim().optional().default(''),
   ac: z.string().trim().optional().default(''),

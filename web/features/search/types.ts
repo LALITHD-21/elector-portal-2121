@@ -56,4 +56,6 @@ export interface SearchFiltersState {
   part?: string;
   village?: string;
   fuzzy?: boolean;
+  relativeName?: string;
 }
+
