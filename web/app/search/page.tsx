@@ -197,7 +197,7 @@ function SearchPageContent() {
 
       {/* 5. Official Electoral Compliance & Privacy Footer */}
       <footer className="w-full max-w-2xl mx-auto text-center text-[11px] text-slate-400 font-medium pt-4 pb-9 space-y-1.5 select-none">
-        <div className="inline-flex items-center justify-center gap-1.5 text-slate-500 font-semibold text-[11px] select-none">
+        <div className="inline-flex items-center justify-center gap-1.5 text-slate-500 font-semibold text-[11px] select-none flex-wrap px-2 text-center max-w-full">
           <button
             type="button"
             onClick={handleShieldAdminClick}

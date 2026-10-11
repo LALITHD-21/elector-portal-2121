@@ -70,17 +70,17 @@ export function CandidateHeroBanner({
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4 font-sans">
       {/* 1. Top Bar: MLC ELECTION 2026 + Language Switcher */}
-      <div className="flex items-center justify-between px-1 text-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-black tracking-wider uppercase text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-            <span className="relative w-3.5 h-4 rounded-2xs overflow-hidden inline-block flex-shrink-0">
+      <div className="flex items-center justify-between gap-1.5 px-0.5 sm:px-1 text-slate-800">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-black tracking-wider uppercase text-blue-800 bg-blue-50 px-2 sm:px-2.5 py-1 rounded-lg border border-blue-200 truncate">
+            <span className="relative w-3.5 h-4 rounded-2xs overflow-hidden inline-block shrink-0">
               <Image src={partyLogoUrl} alt="INC" fill unoptimized className="object-cover" />
             </span>
-            <span>{t.mlcElection}</span>
+            <span className="truncate">{t.mlcElection}</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Prominent App Install Button */}
           <button
             type="button"
@@ -89,7 +89,7 @@ export function CandidateHeroBanner({
                 window.dispatchEvent(new CustomEvent('open-pwa-install'));
               }
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border border-blue-300 bg-white/95 text-blue-700 hover:bg-blue-50 active:scale-95 shadow-2xs transition"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-black border border-blue-300 bg-white/95 text-blue-700 hover:bg-blue-50 active:scale-95 shadow-2xs transition"
             aria-label="Install App"
           >
             <Download className="w-3.5 h-3.5 text-blue-600" />
@@ -100,7 +100,7 @@ export function CandidateHeroBanner({
           <button
             type="button"
             onClick={toggleLanguage}
-            className="px-3.5 py-1 rounded-full text-xs font-extrabold border border-blue-300 bg-white/95 text-blue-800 hover:bg-blue-50 active:scale-95 shadow-2xs transition"
+            className="px-2.5 sm:px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold border border-blue-300 bg-white/95 text-blue-800 hover:bg-blue-50 active:scale-95 shadow-2xs transition"
             aria-label={language === 'en' ? 'Switch to Kannada' : 'Switch to English'}
           >
             {language === 'en' ? 'ಕನ್ನಡ' : 'English'}
@@ -132,7 +132,7 @@ export function CandidateHeroBanner({
 
         <div className="relative flex items-center justify-between gap-3.5 sm:gap-6">
           {/* Candidate Portrait Avatar Frame */}
-          <div className="relative w-28 h-28 sm:w-36 sm:h-36 min-w-[112px] min-h-[112px] sm:min-w-[144px] sm:min-h-[144px] shrink-0">
+          <div className="relative w-24 h-24 sm:w-36 sm:h-36 min-w-[96px] min-h-[96px] sm:min-w-[144px] sm:min-h-[144px] shrink-0">
             <div className="relative w-full h-full rounded-2xl sm:rounded-3xl border-2 border-white/95 shadow-xl shadow-blue-950/25 overflow-hidden bg-slate-900/10 group">
               <Image
                 src={candidatePhotoUrl}
@@ -141,7 +141,7 @@ export function CandidateHeroBanner({
                 priority
                 unoptimized
                 className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 640px) 112px, 144px"
+                sizes="(max-width: 640px) 96px, 144px"
               />
             </div>
           </div>
@@ -250,29 +250,29 @@ export function CandidateHeroBanner({
       {/* 4. Official Ballot Paper Voting Guide Card */}
       <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-soft-sm p-4 sm:p-5 space-y-3.5 transition-all overflow-hidden">
         {/* Header with Title and Sl. No. Badge */}
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-blue-100 text-blue-700 font-black text-xs shadow-2xs">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-blue-100 text-blue-700 font-black text-xs shadow-2xs shrink-0">
               <Sparkles className="w-4 h-4 text-blue-600" />
             </span>
-            <div>
-              <h4 className="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+            <div className="min-w-0">
+              <h4 className="text-xs sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5 truncate">
                 <span>{t.ballotGuideBadge}</span>
               </h4>
-              <p className="text-[11px] text-slate-500 font-medium">
+              <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                 {t.ballotInstructionHeader}
               </p>
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs shrink-0 whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             <span>{t.ballotSlNoBadge}</span>
           </span>
         </div>
 
         {/* Ballot Paper Specimen Card Container */}
-        <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100/80 border border-slate-200 p-2 sm:p-3 shadow-inner group">
+        <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100/80 border border-slate-200 p-1.5 sm:p-3 shadow-inner group">
           <div className="relative w-full aspect-[546/187] rounded-xl overflow-hidden bg-white shadow-2xs border border-slate-200/70">
             <Image
               src="/ballot-candidate-guide.png"
