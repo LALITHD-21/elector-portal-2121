@@ -7,7 +7,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const host = request.headers.get('host') || 'localhost:8081';
+    const rawHost = request.headers.get('host') || 'shashi-hulikuntemutt.vercel.app';
+    const host = /^[a-zA-Z0-9.-]+(:[0-9]+)?$/.test(rawHost)
+      ? rawHost
+      : 'shashi-hulikuntemutt.vercel.app';
+
     const protocol =
       request.headers.get('x-forwarded-proto') ||
       (host.startsWith('localhost') ||
@@ -15,7 +19,7 @@ export async function GET(request: NextRequest) {
       host.startsWith('127.0')
         ? 'http'
         : 'https');
-    const startUrl = `${protocol}://${host}/search`;
+    const startUrl = `${protocol}://${host}/search`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     // Read icon for Apple WebClip
     let iconBase64 = '';

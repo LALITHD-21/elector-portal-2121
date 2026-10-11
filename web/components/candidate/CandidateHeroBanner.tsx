@@ -10,6 +10,7 @@ import {
   Sparkles,
   ClipboardList,
   X,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -244,6 +245,63 @@ export function CandidateHeroBanner({
         <p className="text-[11px] text-slate-500 font-medium">
           {t.searchTip}
         </p>
+      </div>
+
+      {/* 4. Official Ballot Paper Voting Guide Card */}
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-soft-sm p-4 sm:p-5 space-y-3.5 transition-all overflow-hidden">
+        {/* Header with Title and Sl. No. Badge */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-blue-100 text-blue-700 font-black text-xs shadow-2xs">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+            </span>
+            <div>
+              <h4 className="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                <span>{t.ballotGuideBadge}</span>
+              </h4>
+              <p className="text-[11px] text-slate-500 font-medium">
+                {t.ballotInstructionHeader}
+              </p>
+            </div>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span>{t.ballotSlNoBadge}</span>
+          </span>
+        </div>
+
+        {/* Ballot Paper Specimen Card Container */}
+        <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100/80 border border-slate-200 p-2 sm:p-3 shadow-inner group">
+          <div className="relative w-full aspect-[546/187] rounded-xl overflow-hidden bg-white shadow-2xs border border-slate-200/70">
+            <Image
+              src="/ballot-candidate-guide.png"
+              alt="Ballot Paper Specimen - Shashi Hulikuntemutt Sl. No. 1"
+              fill
+              priority
+              unoptimized
+              sizes="(max-width: 640px) 100vw, 672px"
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Explanatory Voting Guidance Banner */}
+        <div className="rounded-2xl bg-blue-50/90 border border-blue-200/80 p-3 sm:p-3.5 space-y-2">
+          <div className="flex items-start gap-2.5">
+            <div className="mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-black shrink-0 shadow-2xs">
+              1
+            </div>
+            <p className="text-xs sm:text-sm font-bold text-blue-950 leading-snug">
+              {t.ballotInstructionText}
+            </p>
+          </div>
+
+          <div className="pt-1.5 border-t border-blue-200/60 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-amber-900 bg-amber-50/70 px-2.5 py-1.5 rounded-xl border border-amber-200/60">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span>{t.ballotCrucialNote}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

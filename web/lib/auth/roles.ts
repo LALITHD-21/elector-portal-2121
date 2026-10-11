@@ -59,7 +59,7 @@ const ROLE_LABEL_MAP: Record<string, UserRole> = {
  * Normalize a role string from the cookie to a canonical UserRole.
  * Returns null if the role is not recognized.
  */
-function normalizeRole(raw: string): UserRole | null {
+export function normalizeRole(raw: string): UserRole | null {
   const key = raw.trim().toLowerCase();
   return ROLE_LABEL_MAP[key] ?? null;
 }
@@ -216,4 +216,27 @@ export function isAuthError(
   result: AuthResult | AuthError
 ): result is AuthError {
   return 'error' in result;
+}
+
+/**
+ * Safely verify if an HTTP request carries a valid internal admin API key.
+ * Strictly requires process.env.ADMIN_SECRET_KEY to be set and non-empty.
+ * In local development/testing without ADMIN_SECRET_KEY, falls back only if NODE_ENV !== 'production'.
+ */
+export function isInternalAdminAuthorized(request: NextRequest): boolean {
+  const adminSecret = process.env.ADMIN_SECRET_KEY;
+  const providedKey = request.headers.get('x-admin-key');
+  if (!providedKey) return false;
+
+  if (adminSecret && adminSecret.trim() !== '') {
+    return providedKey === adminSecret;
+  }
+
+  // If ADMIN_SECRET_KEY is not configured in production, reject internal key auth
+  if (process.env.NODE_ENV === 'production') {
+    return false;
+  }
+
+  // Non-production test fallback only
+  return providedKey === 'internal_test_secret_2026';
 }

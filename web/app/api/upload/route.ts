@@ -94,11 +94,19 @@ export async function POST(req: NextRequest) {
         const fileName = file.name;
         const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
 
-        // 1. Strict File Format Validation
+        // 1. Strict File Format & Size Validation
         if (!['xlsx', 'xls', 'csv', 'pdf'].includes(ext)) {
             return NextResponse.json(
                 { error: 'Invalid file format. Please upload an Excel (.xlsx, .xls, .csv) or PDF (.pdf) file.' },
                 { status: 400 }
+            );
+        }
+
+        const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            return NextResponse.json(
+                { error: 'File size exceeds maximum allowable limit of 25 MB. Please split the electoral roll into smaller batches.' },
+                { status: 413 }
             );
         }
 

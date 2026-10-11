@@ -75,6 +75,13 @@ export interface Translations {
   epicLabel: string;
   submitRequestBtn: string;
   backToSearch: string;
+
+  // Ballot Guide
+  ballotGuideBadge: string;
+  ballotSlNoBadge: string;
+  ballotInstructionHeader: string;
+  ballotInstructionText: string;
+  ballotCrucialNote: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -150,6 +157,12 @@ export const translations: Record<Language, Translations> = {
     epicLabel: 'EPIC (Voter ID) Number',
     submitRequestBtn: 'Submit Request',
     backToSearch: 'Back to voter search',
+
+    ballotGuideBadge: 'Official Ballot Paper Guide',
+    ballotSlNoBadge: 'Sl. No. 1',
+    ballotInstructionHeader: 'Preferential Voting Procedure',
+    ballotInstructionText: "On voting day, write '1' in the box next to candidate Shashi Hulikuntemutt (Sl. No. 1) to cast your 1st preference vote.",
+    ballotCrucialNote: "Crucial Rule: Write only digit '1' in the box. Do NOT put tick (✓) or cross (✗) marks.",
   },
   kn: {
     mlcElection: 'ವಿಧಾನ ಪರಿಷತ್ ಚುನಾವಣೆ 2026',
@@ -223,5 +236,11 @@ export const translations: Record<Language, Translations> = {
     epicLabel: 'EPIC (ಮತದಾರರ ಗುರುತಿನ ಚೀಟಿ) ಸಂಖ್ಯೆ',
     submitRequestBtn: 'ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
     backToSearch: 'ಮತದಾರರ ಹುಡುಕಾಟಕ್ಕೆ ಹಿಂತಿರುಗಿ',
+
+    ballotGuideBadge: 'ಅಧಿಕೃತ ಮತಪತ್ರ ಮಾದರಿ ಮಾರ್ಗದರ್ಶಿ',
+    ballotSlNoBadge: 'ಕ್ರಮ ಸಂಖ್ಯೆ: 1',
+    ballotInstructionHeader: 'ಮತಪತ್ರದಲ್ಲಿ ಮತ ಚಲಾಯಿಸುವ ವಿಧಾನ',
+    ballotInstructionText: "ಮತದಾನದ ದಿನ ಶಶಿ ಹುಲಿಕುಂಟೆಮಠ್ ಅವರ ಹೆಸರು ಹಾಗೂ ಭಾವಚಿತ್ರದ ಎದುರಿಗಿರುವ ಅಂಕಣದಲ್ಲಿ '1' ಎಂದು ಬರೆದು ನಿಮ್ಮ ಮೊದಲ ಪ್ರಾಶಸ್ತ್ಯ ಮತ ನೀಡಿ.",
+    ballotCrucialNote: "ಮುಖ್ಯ ಸೂಚನೆ: ಅಂಕಣದಲ್ಲಿ ಕೇವಲ '1' ಎಂದು ಮಾತ್ರ ಅಂಕಿ ಬರೆಯಿರಿ. (✓ ಅಥವಾ ✗ ಹಾಕಬೇಡಿ).",
   },
 };

@@ -3,15 +3,13 @@ import {
   getVoterRequests,
   createVoterRequest,
 } from '@/lib/requestsService';
-import { requireRole, isAuthError } from '@/lib/auth/roles';
+import { requireRole, isAuthError, isInternalAdminAuthorized } from '@/lib/auth/roles';
 
 export async function GET(request: NextRequest) {
   try {
     // Role check: Authenticated admin, supervisor, operator, or worker/field_agent
     const auth = requireRole(request, 'admin', 'supervisor', 'operator', 'field_agent');
-    const isInternalAuth =
-      request.headers.get('x-admin-key') ===
-      (process.env.ADMIN_SECRET_KEY || 'internal_test_secret_2026');
+    const isInternalAuth = isInternalAdminAuthorized(request);
 
     if (isAuthError(auth) && !isInternalAuth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });

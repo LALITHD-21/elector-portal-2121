@@ -90,8 +90,8 @@ export async function POST(request: Request) {
     const clientIp = getClientIp(request);
     const now = Date.now();
 
-    // Development/Test reset hook
-    if (request.headers.get('x-test-reset-ratelimit') === 'true') {
+    // Only allow rate-limit reset in non-production local automated testing
+    if (process.env.NODE_ENV === 'test' && request.headers.get('x-test-reset-ratelimit') === 'true') {
       loginRateLimitStore.delete(clientIp);
       return NextResponse.json({ reset: true });
     }

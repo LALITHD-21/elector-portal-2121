@@ -91,7 +91,16 @@ export async function verifySessionEdge(token: string): Promise<Record<string, u
         expectedSig += bytes[i].toString(16).padStart(2, '0');
       }
 
-      if (signature !== expectedSig) {
+      if (signature.length !== expectedSig.length) {
+        return null;
+      }
+
+      // Constant-time comparison to prevent timing attacks in Edge runtime
+      let mismatch = 0;
+      for (let i = 0; i < signature.length; i++) {
+        mismatch |= signature.charCodeAt(i) ^ expectedSig.charCodeAt(i);
+      }
+      if (mismatch !== 0) {
         return null; // Signature verification failed
       }
 

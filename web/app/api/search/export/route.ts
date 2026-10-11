@@ -15,6 +15,10 @@ function escapeCsvCell(value: string | number | null | undefined): string {
   return str;
 }
 
+function sanitizePostgrestTerm(term: string): string {
+  return term.replace(/[,()"'\\;]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export async function GET(request: NextRequest) {
   // 1. Strict security check: admin & operator only
   const auth = requireRole(request, 'admin', 'operator');
@@ -57,6 +61,8 @@ export async function GET(request: NextRequest) {
 
     const trimmedQ = q.trim();
     const trimmedRel = relativeName.trim();
+    const safeQ = sanitizePostgrestTerm(trimmedQ);
+    const safeRel = sanitizePostgrestTerm(trimmedRel);
     const normalizedEpic = normalizeEpic(trimmedQ);
 
     if (isValidEpic(normalizedEpic)) {
@@ -64,18 +70,18 @@ export async function GET(request: NextRequest) {
     } else if (/^\d{10}$/.test(trimmedQ) || (mobile && /^\d{10}$/.test(mobile))) {
       const phoneDigits = /^\d{10}$/.test(trimmedQ) ? trimmedQ : mobile.replace(/\D/g, '');
       query = query.ilike('whatsapp_mob', `%${phoneDigits}%`);
-    } else if (trimmedRel.length > 0) {
-      if (trimmedQ.length > 0) {
-        query = query.ilike('name', `%${trimmedQ}%`).ilike('relative_name', `%${trimmedRel}%`);
+    } else if (safeRel.length > 0) {
+      if (safeQ.length > 0) {
+        query = query.ilike('name', `%${safeQ}%`).ilike('relative_name', `%${safeRel}%`);
       } else {
-        query = query.ilike('relative_name', `%${trimmedRel}%`);
+        query = query.ilike('relative_name', `%${safeRel}%`);
       }
-    } else if (trimmedQ.length > 0) {
-      query = query.or(`name.ilike.%${trimmedQ}%,relative_name.ilike.%${trimmedQ}%`);
+    } else if (safeQ.length > 0) {
+      query = query.or(`name.ilike.%${safeQ}%,relative_name.ilike.%${safeQ}%`);
     }
 
     if (district) query = query.eq('district', district);
-    if (taluk) query = query.ilike('taluk', `%${taluk}%`);
+    if (taluk) query = query.ilike('taluk', `%${sanitizePostgrestTerm(taluk)}%`);
     if (ac) query = query.eq('ac_name', ac);
     if (part) query = query.eq('part_number', part);
     if (village) query = query.ilike('village', `%${village}%`);

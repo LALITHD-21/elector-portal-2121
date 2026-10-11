@@ -6,13 +6,10 @@ import {
   getRequestEvents,
 } from '@/lib/requestsService';
 import { RequestStatus, STATUS_MAP } from '@/lib/status-map';
-import { requireRole, isAuthError } from '@/lib/auth/roles';
+import { requireRole, isAuthError, isInternalAdminAuthorized } from '@/lib/auth/roles';
 
 function checkAuth(request: NextRequest, ...roles: ('admin' | 'supervisor' | 'operator' | 'field_agent')[]) {
-  const isInternal =
-    request.headers.get('x-admin-key') ===
-    (process.env.ADMIN_SECRET_KEY || 'internal_test_secret_2026');
-  if (isInternal) return true;
+  if (isInternalAdminAuthorized(request)) return true;
 
   const auth = requireRole(request, ...roles);
   if (isAuthError(auth)) return auth;

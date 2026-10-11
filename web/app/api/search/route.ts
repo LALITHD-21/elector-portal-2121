@@ -33,6 +33,14 @@ function checkRateLimit(key: string, limit = 60, windowMs = 60000): boolean {
   return true;
 }
 
+/**
+ * Sanitize search inputs to prevent PostgREST syntax errors and filter injection in .or() expressions.
+ * Strips PostgREST control characters: commas, parentheses, quotes, backslashes, semicolons.
+ */
+function sanitizePostgrestTerm(term: string): string {
+  return term.replace(/[,()"'\\;]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export async function GET(request: NextRequest) {
   const startTime = performance.now();
 
@@ -105,6 +113,9 @@ export async function GET(request: NextRequest) {
       ? supabase.from('electors').select(selectColumns)
       : supabase.from('electors').select(selectColumns, { count: 'exact' });
 
+    const safeQ = sanitizePostgrestTerm(trimmedQ);
+    const safeRel = sanitizePostgrestTerm(trimmedRel);
+
     // Mode A: Exact EPIC card number format (indexed 15ms lookup)
     if (isEpicQuery) {
       queryType = 'epic';
@@ -123,9 +134,9 @@ export async function GET(request: NextRequest) {
       query = query.ilike('whatsapp_mob', `%${phoneDigits}%`);
     }
     // Mode C1: Dedicated Relative / Father / Husband Name search entered
-    else if (trimmedRel.length > 0) {
+    else if (safeRel.length > 0) {
       const hasAnyFilter = Boolean(part || ac || district || taluk || village);
-      if (trimmedRel.length < 2 && trimmedQ.length < 2 && !hasAnyFilter) {
+      if (safeRel.length < 2 && safeQ.length < 2 && !hasAnyFilter) {
         return NextResponse.json({
           rows: [],
           total: 0,
@@ -139,28 +150,28 @@ export async function GET(request: NextRequest) {
 
       queryType = 'name';
 
-      if (trimmedQ.length > 0) {
+      if (safeQ.length > 0) {
         // User entered both Elector Name AND Relative Name (e.g. name = Sushma, relative = Satyamurthy)
-        const qNoSpace = trimmedQ.replace(/\s+/g, '');
-        if (qNoSpace !== trimmedQ && qNoSpace.length >= 2) {
+        const qNoSpace = safeQ.replace(/\s+/g, '');
+        if (qNoSpace !== safeQ && qNoSpace.length >= 2) {
           query = query
-            .or(`name.ilike.%${trimmedQ}%,name.ilike.%${qNoSpace}%`)
-            .ilike('relative_name', `%${trimmedRel}%`);
+            .or(`name.ilike.%${safeQ}%,name.ilike.%${qNoSpace}%`)
+            .ilike('relative_name', `%${safeRel}%`);
         } else {
           query = query
-            .ilike('name', `%${trimmedQ}%`)
-            .ilike('relative_name', `%${trimmedRel}%`);
+            .ilike('name', `%${safeQ}%`)
+            .ilike('relative_name', `%${safeRel}%`);
         }
       } else {
         // User entered only Relative Name (e.g. relative = Satyamurthy)
-        query = query.ilike('relative_name', `%${trimmedRel}%`);
+        query = query.ilike('relative_name', `%${safeRel}%`);
       }
     }
     // Mode C2: Name or Location text search in main bar (with intelligent relative name cross-matching & fuzzy)
-    else if (trimmedQ.length > 0) {
+    else if (safeQ.length > 0) {
       // Guard against slow 1-character full-table scans across 192k records unless filtered
       const hasAnyFilter = Boolean(part || ac || district || taluk || village);
-      if (trimmedQ.length < 2 && !hasAnyFilter) {
+      if (safeQ.length < 2 && !hasAnyFilter) {
         return NextResponse.json({
           rows: [],
           total: 0,
@@ -181,10 +192,10 @@ export async function GET(request: NextRequest) {
           const { data: translitData } = await supabase
             .from('name_transliterations')
             .select('canonical')
-            .eq('variant', trimmedQ.toLowerCase())
+            .eq('variant', safeQ.toLowerCase())
             .maybeSingle();
           if (translitData?.canonical) {
-            canonicalTerm = translitData.canonical;
+            canonicalTerm = sanitizePostgrestTerm(translitData.canonical);
           }
         } catch {
           // Non-blocking fallback
@@ -192,7 +203,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Check if user entered a known location name (AC, Taluk, Booth area, e.g. "KGF", "Robertsonpet")
-      const cleanQ = trimmedQ.replace(/[\.\s_-]/g, '').toLowerCase();
+      const cleanQ = safeQ.replace(/[\.\s_-]/g, '').toLowerCase();
       const matchedLocationParts = Object.entries(BOOTH_MASTER_MAP)
         .filter(([_, info]) => {
           const infoAc = info.ac_name.replace(/[\.\s_-]/g, '').toLowerCase();
@@ -202,31 +213,31 @@ export async function GET(request: NextRequest) {
             infoAc === cleanQ ||
             infoTaluk === cleanQ ||
             infoDist === cleanQ ||
-            info.ac_name.toLowerCase().includes(trimmedQ.toLowerCase()) ||
-            info.taluk.toLowerCase().includes(trimmedQ.toLowerCase())
+            info.ac_name.toLowerCase().includes(safeQ.toLowerCase()) ||
+            info.taluk.toLowerCase().includes(safeQ.toLowerCase())
           );
         })
         .map(([p]) => p);
 
-      if (matchedLocationParts.length > 0 && trimmedQ.length <= 20) {
+      if (matchedLocationParts.length > 0 && safeQ.length <= 20) {
         // Broaden search to include electors in this location or with this name
         query = query.or(
-          `part_number.in.(${matchedLocationParts.join(',')}),name.ilike.%${trimmedQ}%,relative_name.ilike.%${trimmedQ}%,polling_station_name.ilike.%${trimmedQ}%,polling_address.ilike.%${trimmedQ}%,address.ilike.%${trimmedQ}%`
+          `part_number.in.(${matchedLocationParts.join(',')}),name.ilike.%${safeQ}%,relative_name.ilike.%${safeQ}%,polling_station_name.ilike.%${safeQ}%,polling_address.ilike.%${safeQ}%,address.ilike.%${safeQ}%`
         );
-      } else if (canonicalTerm && canonicalTerm.toLowerCase() !== trimmedQ.toLowerCase()) {
+      } else if (canonicalTerm && canonicalTerm.toLowerCase() !== safeQ.toLowerCase()) {
         query = query.or(
-          `name.ilike.%${trimmedQ}%,name.ilike.%${canonicalTerm}%,relative_name.ilike.%${trimmedQ}%,relative_name.ilike.%${canonicalTerm}%`
+          `name.ilike.%${safeQ}%,name.ilike.%${canonicalTerm}%,relative_name.ilike.%${safeQ}%,relative_name.ilike.%${canonicalTerm}%`
         );
       } else {
         // Intelligent cross-matching: if user typed multiple words (e.g. "Sushma Satyamurthy"),
         // check whether one word matches the elector's name and another matches the relative's name:
-        const words = trimmedQ.split(/\s+/).filter(w => w.length >= 2);
-        const qNoSpace = trimmedQ.replace(/\s+/g, '');
+        const words = safeQ.split(/\s+/).filter(w => w.length >= 2);
+        const qNoSpace = safeQ.replace(/\s+/g, '');
         if (words.length >= 2) {
           const [w1, w2] = words;
           const multiOr = [
-            `name.ilike.%${trimmedQ}%`,
-            `relative_name.ilike.%${trimmedQ}%`,
+            `name.ilike.%${safeQ}%`,
+            `relative_name.ilike.%${safeQ}%`,
             `name.ilike.%${qNoSpace}%`,
             `and(name.ilike.%${w1}%,relative_name.ilike.%${w2}%)`,
             `and(name.ilike.%${w2}%,relative_name.ilike.%${w1}%)`,
@@ -238,7 +249,7 @@ export async function GET(request: NextRequest) {
           }
           query = query.or(multiOr.join(','));
         } else {
-          query = query.or(`name.ilike.%${trimmedQ}%,relative_name.ilike.%${trimmedQ}%`);
+          query = query.or(`name.ilike.%${safeQ}%,relative_name.ilike.%${safeQ}%`);
         }
       }
     }
@@ -275,7 +286,8 @@ export async function GET(request: NextRequest) {
       if (talukParts.length > 0) {
         query = query.in('part_number', talukParts);
       } else {
-        query = query.or(`taluk.ilike.%${taluk}%,polling_station_name.ilike.%${taluk}%`);
+        const safeTaluk = sanitizePostgrestTerm(taluk);
+        query = query.or(`taluk.ilike.%${safeTaluk}%,polling_station_name.ilike.%${safeTaluk}%`);
       }
     }
 
@@ -300,7 +312,8 @@ export async function GET(request: NextRequest) {
       if (acParts.length > 0) {
         query = query.in('part_number', acParts);
       } else {
-        query = query.or(`ac_name.eq.${ac},ac_name.ilike.%${ac}%`);
+        const safeAc = sanitizePostgrestTerm(ac);
+        query = query.or(`ac_name.eq.${safeAc},ac_name.ilike.%${safeAc}%`);
       }
     }
     if (part) {

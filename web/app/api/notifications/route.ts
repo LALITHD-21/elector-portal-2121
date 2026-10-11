@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dispatchPendingNotifications, getNotificationsList } from '@/lib/notifications';
+import { requireRole, isAuthError, isInternalAdminAuthorized } from '@/lib/auth/roles';
 
 export async function POST(request: NextRequest) {
   try {
+    const isInternal = isInternalAdminAuthorized(request);
+    const auth = requireRole(request, 'admin', 'supervisor');
+
+    if (!isInternal && isAuthError(auth)) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const result = await dispatchPendingNotifications();
     return NextResponse.json({
       success: true,
@@ -18,8 +26,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const isInternal = isInternalAdminAuthorized(request);
+    const auth = requireRole(request, 'admin', 'supervisor');
+
+    if (!isInternal && isAuthError(auth)) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const list = await getNotificationsList();
     const queuedCount = list.filter((n) => n.status === 'queued').length;
     const sentCount = list.filter((n) => n.status === 'sent').length;

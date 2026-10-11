@@ -4,13 +4,11 @@ import {
   updateVoterRequestStatus,
 } from '@/lib/requestsService';
 import { RequestStatus, canTransition } from '@/lib/status-map';
-import { requireRole, isAuthError } from '@/lib/auth/roles';
+import { requireRole, isAuthError, isInternalAdminAuthorized } from '@/lib/auth/roles';
 
 export async function POST(request: NextRequest) {
   try {
-    const isInternal =
-      request.headers.get('x-admin-key') ===
-      (process.env.ADMIN_SECRET_KEY || 'internal_test_secret_2026');
+    const isInternal = isInternalAdminAuthorized(request);
     const auth = requireRole(request, 'admin', 'supervisor', 'operator');
 
     if (!isInternal && isAuthError(auth)) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySessionSync } from '@/lib/auth/sessionCrypto';
+import { normalizeRole } from '@/lib/auth/roles';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,17 +28,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const rawRole = (decoded.role as string) || 'admin';
-    // Normalize role to 'admin' | 'supervisor' | 'operator'
-    let normalizedRole: 'admin' | 'supervisor' | 'operator' = 'admin';
-    if (rawRole.includes('supervisor')) normalizedRole = 'supervisor';
-    else if (rawRole.includes('operator')) normalizedRole = 'operator';
-    else normalizedRole = 'admin';
+    const rawRole = (decoded.role as string) || '';
+    const normalizedRole = normalizeRole(rawRole);
+
+    if (!normalizedRole) {
+      return NextResponse.json(
+        {
+          authenticated: false,
+          role: null,
+          username: null,
+        },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json({
       authenticated: true,
       userId: decoded.userId,
-      username: decoded.username || 'admin',
+      username: decoded.username || 'user',
       role: normalizedRole,
       email: decoded.email,
     });
