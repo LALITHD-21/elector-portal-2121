@@ -175,7 +175,7 @@ Vote on polling day!`;
         max-width: 145mm !important;
         margin: 0 auto !important;
         box-shadow: none !important;
-        border: 2px solid #2563eb !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 18px !important;
         overflow: hidden !important;
         background: #ffffff !important;
@@ -271,224 +271,142 @@ Vote on polling day!`;
         </div>
 
         {/* Scrollable Slip Content Area */}
-        <div className="p-3.5 sm:p-6 max-h-[75vh] overflow-y-auto space-y-3.5">
+        <div className="p-3.5 sm:p-6 max-h-[88vh] overflow-y-auto space-y-3.5">
           {/* Printable / Visual Slip Card (Identical in Preview, Downloaded PNG, and Printed Page) */}
           <div
             ref={slipRef}
-            className="print-voter-slip rounded-2xl border-2 border-blue-200/90 overflow-hidden shadow-soft-sm bg-white w-full max-w-[460px] mx-auto"
+            className="print-voter-slip rounded-2xl border border-slate-200 overflow-hidden shadow-soft-sm bg-white w-full max-w-[460px] mx-auto text-left"
             style={{ width: '100%', maxWidth: '460px' }}
           >
-            {/* Top Royal Blue Header Banner matching CandidateHeroBanner.tsx */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#1e40af] via-[#2563eb] to-[#0284c7] text-white p-3.5 sm:p-5 border-b border-blue-400/40">
-              {/* Subtle Indian National Congress Tricolor Accent Stripe at Top */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF671F] via-white to-[#046A38] opacity-90 z-10" />
-
-              {/* Official Indian National Congress Tricolor Flag Background Integration */}
-              <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-                <div
-                  className="absolute right-0 top-0 bottom-0 opacity-20 sm:opacity-25 overflow-hidden"
-                  style={{ width: '50%', height: '100%' }}
-                >
-                  <img
-                    src="/congress-flag.png"
-                    alt="INC Flag"
-                    width={512}
-                    height={170}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-                    className="w-full h-full object-cover object-center"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#1e40af] via-[#1e40af]/90 sm:via-[#1e40af]/75 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-950/25 via-transparent to-blue-900/15" />
-              </div>
-
-              <div className="relative z-10 flex items-center gap-3 sm:gap-4">
-                {/* Candidate Portrait Avatar Frame: STRICT EXPLICIT PIXEL SIZING ON BOTH CONTAINER AND IMAGE */}
-                <div
-                  className="relative shrink-0 rounded-2xl border-2 border-white/95 shadow-md overflow-hidden bg-white"
-                  style={{
-                    width: '76px',
-                    height: '76px',
-                    minWidth: '76px',
-                    minHeight: '76px',
-                    maxWidth: '76px',
-                    maxHeight: '76px',
-                  }}
-                >
-                  <img
-                    src={candidatePhotoUrl}
-                    alt={displayCandidate}
-                    width={76}
-                    height={76}
-                    style={{
-                      width: '76px',
-                      height: '76px',
-                      minWidth: '76px',
-                      minHeight: '76px',
-                      maxWidth: '76px',
-                      maxHeight: '76px',
-                      objectFit: 'cover',
-                      objectPosition: 'top',
-                      display: 'block',
-                    }}
-                    className="w-full h-full object-cover object-top block"
-                  />
-                </div>
-
-                {/* Candidate Text Metadata */}
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-200 leading-tight">
-                    {displayConstituency}
-                  </div>
-                  <h2 className="text-base sm:text-xl font-black tracking-tight text-white leading-tight truncate">
-                    {displayCandidate}
-                  </h2>
-                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    {/* INC Candidate Pill */}
-                    <span className="relative overflow-hidden inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black text-blue-950 shadow-2xs border border-white/90 backdrop-blur-md">
-                      <div className="absolute inset-0 flex flex-col pointer-events-none opacity-40">
-                        <div className="flex-1 bg-[#FF9933]" />
-                        <div className="flex-1 bg-white" />
-                        <div className="flex-1 bg-[#138808]" />
-                      </div>
-                      <div className="absolute inset-0 bg-white/55 pointer-events-none" />
-                      <span className="relative z-10 flex items-center gap-1.5">
-                        <img
-                          src={partyLogoUrl}
-                          alt="INC"
-                          width={14}
-                          height={18}
-                          style={{ width: '14px', height: '18px', objectFit: 'contain' }}
-                          className="w-3.5 h-4.5 object-contain inline-block shrink-0"
-                        />
-                        <span>{displayRole}</span>
-                      </span>
-                    </span>
-
-                    {/* Listed Voters Pill */}
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-blue-950/60 border border-blue-300/40 text-blue-100 backdrop-blur-xs truncate max-w-full">
-                      {displayVoterCount}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Slip Body */}
-            <div className="p-3.5 sm:p-5 space-y-3 bg-white">
-              <div className="flex items-center justify-between gap-1 border-b border-slate-100 pb-2">
-                <span className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+            <div className="p-4 sm:p-5 pb-0 space-y-4 bg-white">
+              {/* Slip Header */}
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight whitespace-nowrap">
                   Voter Information Slip
-                </span>
-                <span className="text-[11px] sm:text-xs font-bold text-slate-500">
+                </h2>
+                <span className="text-xs sm:text-sm font-semibold text-slate-500 whitespace-nowrap">
                   ಮತದಾರರ ಮಾಹಿತಿ ಚೀಟಿ
                 </span>
               </div>
 
-              {/* Two Highlighted Boxes: Part No & Serial No */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-2.5 sm:p-3 text-left shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-xs font-bold text-blue-800">
-                      Part No. / ಭಾಗ
-                    </span>
-                    {pollingInfo.isAuxiliary && (
-                      <span className="text-[9px] font-black uppercase bg-amber-500 text-white px-1.5 py-0.5 rounded">
-                        Aux
-                      </span>
-                    )}
+              {/* Part No. and Serial No. Blue Box */}
+              <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between">
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-slate-500">
+                    Part No. / ಭಾಗ ಸಂಖ್ಯೆ
                   </div>
-                  <div className="text-xl sm:text-2xl font-black text-blue-600 mt-0.5 font-mono">
+                  <div className="text-3xl sm:text-4xl font-black text-blue-700 tracking-tight mt-0.5 font-mono">
                     {partNo}
                   </div>
                 </div>
-
-                <div className="bg-blue-50/90 border border-blue-200/90 rounded-xl p-2.5 sm:p-3 text-left shadow-2xs">
-                  <div className="text-[10px] sm:text-xs font-bold text-blue-800">
+                <div className="text-right">
+                  <div className="text-xs sm:text-sm font-semibold text-slate-500">
                     Serial No. / ಕ್ರಮ ಸಂಖ್ಯೆ
                   </div>
-                  <div className="text-xl sm:text-2xl font-black text-blue-600 mt-0.5 font-mono">
+                  <div className="text-3xl sm:text-4xl font-black text-blue-700 tracking-tight mt-0.5 font-mono">
                     {serialNo}
                   </div>
                 </div>
               </div>
 
-              {/* Detail Rows */}
-              <div className="space-y-1.5 text-xs sm:text-sm">
-                <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-start justify-between gap-2">
-                  <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
-                    Name / ಹೆಸರು:
-                  </span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 text-right">
+              {/* Details List with Clean Horizontal Dividers */}
+              <div className="space-y-2 pt-1 text-left">
+                {/* Name */}
+                <div className="border-b border-slate-100 pb-2">
+                  <div className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                    Name / ಹೆಸರು
+                  </div>
+                  <div className="text-base sm:text-lg font-black text-slate-900 leading-snug">
                     {electorName}
-                  </span>
-                </div>
-
-                <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-start justify-between gap-2">
-                  <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
-                    Father / Spouse / ತಂದೆ / ಪತಿ:
-                  </span>
-                  <span className="text-xs sm:text-sm font-bold text-slate-800 text-right">
-                    {relativeName}
-                  </span>
-                </div>
-
-                <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-start justify-between gap-2">
-                  <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
-                    EPIC / ಎಪಿಕ್ ಸಂಖ್ಯೆ:
-                  </span>
-                  <span className="font-mono text-xs sm:text-sm font-black text-blue-900 tracking-wider text-right">
-                    {epic}
-                  </span>
-                </div>
-
-                <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-start justify-between gap-2">
-                  <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
-                    Taluk / ತಾಲ್ಲೂಕು:
-                  </span>
-                  <span className="text-xs sm:text-sm font-bold text-slate-800 text-right">
-                    {talukCity}
-                  </span>
-                </div>
-
-                {/* Polling Station Building */}
-                <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-start justify-between gap-2">
-                  <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
-                    Station / ಮತಗಟ್ಟೆ:
-                  </span>
-                  <div className="text-right">
-                    <p className="text-xs sm:text-sm font-black text-slate-900 leading-snug">
-                      {boothName}
-                    </p>
-                    {boothRoom && (
-                      <p className="text-[11px] font-semibold text-blue-700 mt-0.5">
-                        {boothRoom}
-                      </p>
-                    )}
                   </div>
                 </div>
 
-                {/* Polling Area */}
+                {/* Father / Mother / Husband */}
+                <div className="border-b border-slate-100 pb-2">
+                  <div className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                    Father / Mother / Husband / ತಂದೆ / ತಾಯಿ / ಪತಿ
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-slate-800 leading-snug">
+                    {relativeName}
+                  </div>
+                </div>
+
+                {/* EPIC No. */}
+                <div className="border-b border-slate-100 pb-2">
+                  <div className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                    EPIC No. / ಎಪಿಕ್ ಸಂಖ್ಯೆ
+                  </div>
+                  <div className="font-mono text-sm sm:text-base font-bold text-slate-900 tracking-wide">
+                    {epic}
+                  </div>
+                </div>
+
+                {/* Polling station */}
+                <div className="border-b border-slate-100 pb-2">
+                  <div className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                    Polling station / ಮತಗಟ್ಟೆ
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-slate-800 leading-snug">
+                    {boothName}
+                    {boothRoom ? ` - ${boothRoom}` : ''}
+                  </div>
+                </div>
+
+                {/* Taluk / City */}
+                <div className="border-b border-slate-100 pb-2">
+                  <div className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                    Taluk / City / ತಾಲ್ಲೂಕು / ನಗರ
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-slate-800 leading-snug">
+                    {talukCity}
+                  </div>
+                </div>
+
+                {/* Hobli / Ward · Area */}
                 {pollingArea && (
-                  <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-start justify-between gap-2">
-                    <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
-                      Area / ಪ್ರದೇಶ:
-                    </span>
-                    <span className="text-[11px] font-medium text-slate-700 text-right leading-snug">
+                  <div className="border-b border-slate-100 pb-2">
+                    <div className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                      Hobli / Ward · Area / ಹೋಬಳಿ / ವಾರ್ಡ್ · ಪ್ರದೇಶ
+                    </div>
+                    <div className="text-sm sm:text-base font-bold text-slate-800 leading-snug">
                       {pollingArea}
-                    </span>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {/* Callout Header in Bold Kannada */}
+              <div className="pt-2 text-left">
+                <h3 className="text-base sm:text-lg font-black text-blue-700 tracking-tight">
+                  ನಿಮ್ಮ ಪ್ರಥಮ ಪ್ರಾಶಸ್ತ್ಯ ಮತ ನೀಡಿ ಬೆಂಬಲಿಸಿ
+                </h3>
+              </div>
+
+              {/* Ballot Candidate Guide Specimen */}
+              <div className="relative w-full rounded-xl overflow-hidden border border-slate-300 shadow-2xs bg-white">
+                <img
+                  src="/ballot-candidate-guide.png"
+                  alt="Official Ballot Paper Specimen - Shashi Hulikuntemutt Sl. No. 1"
+                  width={823}
+                  height={295}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    objectFit: 'contain',
+                  }}
+                  className="w-full h-auto block object-contain"
+                />
+              </div>
             </div>
 
-            {/* Blue Verification Banner at Bottom of Slip */}
-            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white px-3.5 py-2 text-center space-y-0.5 border-t border-blue-500/30">
-              <p className="text-[11px] sm:text-xs font-black">
+            {/* Bottom Royal Blue Verification Banner */}
+            <div className="bg-blue-700 text-white p-3.5 sm:p-4 text-left rounded-b-2xl mt-4">
+              <p className="text-xs sm:text-sm font-black text-white leading-tight">
                 Please verify your details. Vote on polling day.
               </p>
-              <p className="text-[9.5px] text-blue-100 font-medium">
-                CEO Karnataka Electoral Roll · South-East Graduates&apos; Constituency
+              <p className="text-[11px] text-blue-100 font-medium mt-1">
+                shashihulikuntemutt.com
               </p>
             </div>
           </div>
