@@ -278,6 +278,54 @@ Vote on polling day!`;
             className="print-voter-slip rounded-2xl border border-slate-200 overflow-hidden shadow-soft-sm bg-white w-full max-w-[460px] mx-auto text-left"
             style={{ width: '100%', maxWidth: '460px' }}
           >
+            {/* Top Candidate Banner (matching reference structure) */}
+            <div className="bg-blue-700 text-white p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4">
+              {/* Candidate Portrait Avatar Frame */}
+              <div
+                className="relative shrink-0 rounded-2xl border-2 border-white/95 shadow-md overflow-hidden bg-white"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  minWidth: '80px',
+                  minHeight: '80px',
+                  maxWidth: '80px',
+                  maxHeight: '80px',
+                }}
+              >
+                <img
+                  src={candidatePhotoUrl}
+                  alt={displayCandidate}
+                  width={80}
+                  height={80}
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    minWidth: '80px',
+                    minHeight: '80px',
+                    maxWidth: '80px',
+                    maxHeight: '80px',
+                    objectFit: 'cover',
+                    objectPosition: 'top',
+                    display: 'block',
+                  }}
+                  className="w-full h-full object-cover object-top block"
+                />
+              </div>
+
+              {/* Candidate Text Metadata */}
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] sm:text-xs font-semibold text-blue-100 tracking-wide leading-tight">
+                  {displayConstituency}
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight mt-0.5 truncate">
+                  {displayCandidate}
+                </h2>
+                <div className="text-xs sm:text-sm font-bold text-amber-300 mt-1">
+                  {displayRole}
+                </div>
+              </div>
+            </div>
+
             <div className="p-4 sm:p-5 pb-0 space-y-4 bg-white">
               {/* Slip Header */}
               <div className="flex items-center gap-2 sm:gap-2.5">
