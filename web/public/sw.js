@@ -27,11 +27,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Only handle browser navigation requests (HTML page visits)
+  // Only handle browser navigation requests (HTML page visits) - Network-first with no stale lock
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/search');
+      fetch(event.request, { cache: 'no-cache' }).catch(() => {
+        return caches.match(event.request) || caches.match('/search');
       })
     );
   }
