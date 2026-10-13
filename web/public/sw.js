@@ -1,5 +1,5 @@
-// PWA Service Worker for Voter Search Portal (v4 - Ultra-fast & Safe)
-const CACHE_NAME = 'voter-search-pwa-v4';
+// PWA Service Worker for Voter Search Portal (v5 - Ultra-fast & Safe)
+const CACHE_NAME = 'voter-search-pwa-v5';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
