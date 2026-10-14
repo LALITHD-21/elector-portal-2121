@@ -86,7 +86,25 @@ function SearchPageContent() {
   };
 
   const handleSelectElector = (elector: SearchResultRow) => {
-    setSelectedElectorForDetail(elector);
+    // Open the official Voter Information Slip directly on mobile & desktop tap
+    setSelectedElectorForSlip(elector);
+  };
+
+  const handleRequestCorrectionFromSlip = () => {
+    if (selectedElectorForSlip) {
+      setCorrectionInitialData({
+        fullName: selectedElectorForSlip.name,
+        relativeName: selectedElectorForSlip.relative_name || '',
+        epicNumber: selectedElectorForSlip.epic_number,
+        taluk: selectedElectorForSlip.taluk || '',
+        hobli: selectedElectorForSlip.polling_station_name || '',
+        villageArea: selectedElectorForSlip.village || '',
+        address: selectedElectorForSlip.address || '',
+      });
+      setRequestModalMode('correction');
+      setIsRequestModalOpen(true);
+      setSelectedElectorForSlip(null);
+    }
   };
 
   const handleDownloadSlipFromDetail = () => {
@@ -235,6 +253,7 @@ function SearchPageContent() {
         candidateRole="INC Candidate"
         constituencyTitle="South-East Graduates' Constituency, Karnataka"
         candidatePhotoUrl="/candidate-avatar.jpg"
+        onRequestCorrection={handleRequestCorrectionFromSlip}
       />
 
       {/* Request to Add or Correct Voter Modal */}

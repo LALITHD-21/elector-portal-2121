@@ -20,6 +20,7 @@ export interface VoterSlipModalProps {
   voterCountText?: string;
   candidatePhotoUrl?: string;
   partyLogoUrl?: string;
+  onRequestCorrection?: () => void;
 }
 
 export function VoterSlipModal({
@@ -32,6 +33,7 @@ export function VoterSlipModal({
   voterCountText,
   candidatePhotoUrl = '/candidate-avatar.jpg',
   partyLogoUrl = '/inc-logo.png',
+  onRequestCorrection,
 }: VoterSlipModalProps) {
   const { language, t } = useLanguage();
   const [mounted, setMounted] = useState(false);
@@ -504,7 +506,18 @@ Vote on polling day!`;
               <span>{language === 'kn' ? 'ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ' : 'Share to WhatsApp'}</span>
             </button>
 
-            {/* Button 4: Close */}
+            {/* Button 4: Request Correction */}
+            {onRequestCorrection && (
+              <button
+                type="button"
+                onClick={onRequestCorrection}
+                className="w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition active:scale-[0.98]"
+              >
+                {language === 'kn' ? 'ವಿವರ ತಪ್ಪಾಗಿದೆಯೇ? ತಿದ್ದುಪಡಿಗೆ ವಿನಂತಿ' : 'Details wrong? Request correction'}
+              </button>
+            )}
+
+            {/* Button 5: Close */}
             <button
               type="button"
               onClick={onClose}

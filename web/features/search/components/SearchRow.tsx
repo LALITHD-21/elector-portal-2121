@@ -4,7 +4,7 @@ import React from 'react';
 import { SearchResultRow } from '../types';
 import { formatEpicForDisplay } from '@/lib/utils';
 import { resolveElectorLocation, resolveElectorSerialNumber } from '@/lib/boothMaster';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Download } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export interface SearchRowProps {
@@ -45,7 +45,7 @@ function HighlightText({ text, query }: { text: string | null | undefined; query
 }
 
 export function SearchRow({ row, searchQuery, onSelect }: SearchRowProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const handleClick = () => {
     if (onSelect) {
@@ -102,12 +102,19 @@ export function SearchRow({ row, searchQuery, onSelect }: SearchRowProps) {
 
       {/* Bottom: Part & Serial numbers + Polling Area */}
       <div className="pt-2.5 mt-2.5 border-t border-slate-100/90 space-y-1.5">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
-            {t.partLabelShort} <strong className="text-blue-700 font-black">{partNo}</strong>
-          </span>
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
-            {t.serialLabelShort} <strong className="text-blue-700 font-black">{serialNo}</strong>
+        <div className="flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
+              {t.partLabelShort} <strong className="text-blue-700 font-black">{partNo}</strong>
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
+              {t.serialLabelShort} <strong className="text-blue-700 font-black">{serialNo}</strong>
+            </span>
+          </div>
+
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10.5px] shadow-2xs transition shrink-0">
+            <Download className="w-3 h-3 text-white" />
+            <span>{language === 'kn' ? 'ಸ್ಲಿಪ್' : 'Slip'}</span>
           </span>
         </div>
 

@@ -74,7 +74,24 @@ export function AnalyticsVoterSearchSection() {
   };
 
   const handleSelectElector = (elector: SearchResultRow) => {
-    setSelectedElectorForDetail(elector);
+    setSelectedElectorForSlip(elector);
+  };
+
+  const handleRequestCorrectionFromSlip = () => {
+    if (selectedElectorForSlip) {
+      setCorrectionInitialData({
+        fullName: selectedElectorForSlip.name,
+        relativeName: selectedElectorForSlip.relative_name || '',
+        epicNumber: selectedElectorForSlip.epic_number,
+        taluk: selectedElectorForSlip.taluk || '',
+        hobli: selectedElectorForSlip.polling_station_name || '',
+        villageArea: selectedElectorForSlip.village || '',
+        address: selectedElectorForSlip.address || '',
+      });
+      setRequestModalMode('correction');
+      setIsRequestModalOpen(true);
+      setSelectedElectorForSlip(null);
+    }
   };
 
   const handleDownloadSlipFromDetail = () => {
@@ -203,6 +220,7 @@ export function AnalyticsVoterSearchSection() {
         candidateRole="INC Candidate"
         constituencyTitle="South-East Graduates' Constituency, Karnataka"
         candidatePhotoUrl="/candidate-avatar.jpg"
+        onRequestCorrection={handleRequestCorrectionFromSlip}
       />
 
       {/* Request Add / Correct Voter Modal */}
