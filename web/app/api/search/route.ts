@@ -8,15 +8,30 @@ import { resolveElectorLocation, resolveElectorSerialNumber, BOOTH_MASTER_MAP } 
 
 export const dynamic = 'force-dynamic';
 
-// In-memory sliding window rate limiter per user/IP
-// Allows up to 60 requests per minute per user session
+// High-concurrency in-memory sliding window rate limiter per user/IP
+// Allows up to 240 requests per minute per user session (plenty for active typing and searching)
 interface RateLimitBucket {
   count: number;
   resetAt: number;
 }
 const rateLimitMap = new Map<string, RateLimitBucket>();
 
-function checkRateLimit(key: string, limit = 60, windowMs = 60000): boolean {
+// Periodic cleanup of expired rate limit buckets to avoid memory buildup under high traffic
+let lastRateLimitCleanup = Date.now();
+function cleanupRateLimitMap() {
+  const now = Date.now();
+  if (now - lastRateLimitCleanup > 60000) {
+    lastRateLimitCleanup = now;
+    rateLimitMap.forEach((bucket, key) => {
+      if (now > bucket.resetAt) {
+        rateLimitMap.delete(key);
+      }
+    });
+  }
+}
+
+function checkRateLimit(key: string, limit = 240, windowMs = 60000): boolean {
+  cleanupRateLimitMap();
   const now = Date.now();
   const bucket = rateLimitMap.get(key);
 
@@ -31,6 +46,36 @@ function checkRateLimit(key: string, limit = 60, windowMs = 60000): boolean {
 
   bucket.count += 1;
   return true;
+}
+
+// High-speed In-Memory Response Cache for repeated popular queries (60s TTL)
+interface SearchCacheEntry {
+  data: SearchApiResponse;
+  expiresAt: number;
+}
+const searchResponseCache = new Map<string, SearchCacheEntry>();
+const MAX_SEARCH_CACHE_SIZE = 500;
+
+function getCachedSearch(cacheKey: string): SearchApiResponse | null {
+  const entry = searchResponseCache.get(cacheKey);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    searchResponseCache.delete(cacheKey);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedSearch(cacheKey: string, data: SearchApiResponse, ttlMs = 60000) {
+  if (searchResponseCache.size >= MAX_SEARCH_CACHE_SIZE) {
+    // Purge oldest entries if cache limit reached
+    const oldestKey = searchResponseCache.keys().next().value;
+    if (oldestKey) searchResponseCache.delete(oldestKey);
+  }
+  searchResponseCache.set(cacheKey, {
+    data,
+    expiresAt: Date.now() + ttlMs,
+  });
 }
 
 /**
@@ -53,7 +98,7 @@ export async function GET(request: NextRequest) {
     ? (request.headers.get('x-forwarded-for') || 'public_anon')
     : (auth.session.userId || auth.session.username || 'staff_search');
 
-  if (!checkRateLimit(rateLimitKey, 60, 60000)) {
+  if (!checkRateLimit(rateLimitKey, 240, 60000)) {
     return NextResponse.json(
       { error: 'Rate limit exceeded. Please wait a few seconds before searching again.' },
       { status: 429 }
@@ -75,6 +120,21 @@ export async function GET(request: NextRequest) {
   }
 
   const { q, relativeName, mobile, part, ac, district, taluk, village, fuzzy, page, pageSize } = parseResult.data;
+
+  // Cache key for public lookups (exact match on query & filter combination)
+  const cacheKey = `${q.trim().toLowerCase()}|${relativeName.trim().toLowerCase()}|${mobile || ''}|${part || ''}|${ac || ''}|${district || ''}|${taluk || ''}|${village || ''}|${Boolean(fuzzy)}|${page}|${pageSize}|${isPublic ? 'pub' : auth.session.role}`;
+  const cachedResponse = getCachedSearch(cacheKey);
+  if (cachedResponse) {
+    return NextResponse.json({
+      ...cachedResponse,
+      durationMs: Math.round(performance.now() - startTime),
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+        'X-Cache': 'HIT',
+      },
+    });
+  }
 
   try {
     const supabase = createAdminClient();
@@ -395,9 +455,15 @@ export async function GET(request: NextRequest) {
       boothInfo,
     };
 
+    // Store in memory cache for subsequent instant hits
+    setCachedSearch(cacheKey, responsePayload, 60000);
+
     return NextResponse.json(responsePayload, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Cache-Control': isPublic
+          ? 'public, s-maxage=30, stale-while-revalidate=60'
+          : 'private, no-cache',
+        'X-Cache': 'MISS',
       },
     });
   } catch (err: unknown) {

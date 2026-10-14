@@ -13,6 +13,15 @@ import { isEpicCached, getElectorByEpic } from '@/lib/electorService';
 import { normalizeEpic, isValidEpic } from '@/lib/utils';
 import { saveSearchHistoryItem, SearchHistoryItem } from '@/lib/searchHistory';
 
+// High-speed client-side query cache (instant 0ms response on back/forward/paging)
+interface ClientSearchCacheEntry {
+  data: SearchApiResponse;
+  timestamp: number;
+}
+const clientSearchCache = new Map<string, ClientSearchCacheEntry>();
+const MAX_CLIENT_CACHE = 150;
+const CLIENT_CACHE_TTL = 60000; // 60s TTL
+
 export function useSearch() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -135,6 +144,21 @@ export function useSearch() {
         }
       }
 
+      // Check client LRU memory cache
+      const cacheKey = `${trimmed.toLowerCase()}|${trimmedRel.toLowerCase()}|${searchFilters.part || ''}|${searchFilters.ac || ''}|${searchFilters.district || ''}|${searchFilters.taluk || ''}|${searchFilters.village || ''}|${Boolean(searchFilters.fuzzy)}|${targetPage}|${pageSize}`;
+      const cachedEntry = clientSearchCache.get(cacheKey);
+      if (cachedEntry && Date.now() - cachedEntry.timestamp < CLIENT_CACHE_TTL) {
+        setResults(cachedEntry.data.rows);
+        setTotal(cachedEntry.data.total);
+        setQueryType(cachedEntry.data.queryType);
+        setDurationMs(0);
+        setPage(cachedEntry.data.page);
+        setBoothInfo(cachedEntry.data.boothInfo || null);
+        setIsLoading(false);
+        setError(null);
+        return;
+      }
+
       const controller = new AbortController();
       abortControllerRef.current = controller;
       setIsLoading(true);
@@ -163,6 +187,14 @@ export function useSearch() {
         }
 
         const data: SearchApiResponse = await res.json();
+        
+        // Cache response in client LRU cache
+        if (clientSearchCache.size >= MAX_CLIENT_CACHE) {
+          const firstKey = clientSearchCache.keys().next().value;
+          if (firstKey) clientSearchCache.delete(firstKey);
+        }
+        clientSearchCache.set(cacheKey, { data, timestamp: Date.now() });
+
         setResults(data.rows);
         setTotal(data.total);
         setQueryType(data.queryType);
@@ -195,7 +227,7 @@ export function useSearch() {
     [pageSize]
   );
 
-  // Trigger search with 200 ms debounce when query or filters change
+  // Trigger search with 250 ms debounce when query or filters change
   const triggerDebouncedSearch = useCallback(
     (newQ: string, newFilters: SearchFiltersState, newPage: number) => {
       if (debounceTimerRef.current) {
@@ -205,7 +237,7 @@ export function useSearch() {
       debounceTimerRef.current = setTimeout(() => {
         updateUrl(newQ, newFilters, newPage);
         executeSearch(newQ, newFilters, newPage);
-      }, 200);
+      }, 250);
     },
     [executeSearch, updateUrl]
   );

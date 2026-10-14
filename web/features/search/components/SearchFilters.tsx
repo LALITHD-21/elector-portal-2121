@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Filter, X, ChevronDown, ChevronUp, RotateCcw, SlidersHorizontal, Check } from 'lucide-react';
 import { SearchFiltersState, SearchFacets } from '../types';
+import { VERIFIED_FACETS } from '../constants';
 import { Select } from '@/components/ui/Select';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
@@ -31,11 +32,7 @@ export function SearchFilters({
 }: SearchFiltersProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [facets, setFacets] = useState<SearchFacets>({
-    districts: [],
-    acs: [],
-    parts: [],
-  });
+  const [facets, setFacets] = useState<SearchFacets>(VERIFIED_FACETS);
   const [isLoadingFacets, setIsLoadingFacets] = useState(false);
   const { language, t } = useLanguage();
 

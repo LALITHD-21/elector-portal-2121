@@ -222,15 +222,11 @@ Vote on polling day!`;
     try {
       setIsGenerating(true);
 
-      // Warm-up pass to resolve webfonts and images into the DOM
-      await toPng(slipRef.current, { pixelRatio: 1, backgroundColor: '#ffffff' });
-
-      // High-resolution capture at 2.5x pixel ratio (crystal clear 4K HD output identical to on-screen preview & print)
+      // High-resolution fast single-pass capture at 2x pixel ratio
       const dataUrl = await toPng(slipRef.current, {
-        cacheBust: true,
-        pixelRatio: 2.5,
+        pixelRatio: 2,
         backgroundColor: '#ffffff',
-        quality: 0.98,
+        quality: 0.95,
       });
 
       const cleanEpic = (elector.epic_number || '').replace(/[^a-zA-Z0-9]/g, '_');

@@ -2,43 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { requireRole, isAuthError } from '@/lib/auth/roles';
 import { SearchFacets } from '@/features/search/types';
+import { VERIFIED_FACETS } from '@/features/search/constants';
 
 export const dynamic = 'force-dynamic';
 
-const VERIFIED_FACETS: SearchFacets = {
-  districts: ['Chikkaballapura', 'Chitradurga', 'Davanagere', 'Kolar', 'Tumkur'],
-  taluks: [
-    'Bagepalli', 'Bangarapet', 'Challakere', 'Channagiri', 'Chikkaballapur',
-    'Chikkanayakanahalli', 'Chintamani', 'Chitradurga', 'Davanagere', 'Gauribidanur',
-    'Gubbi', 'Harihara', 'Hiriyur', 'Holalkere', 'Honnali', 'Hosadurga',
-    'Jagalur', 'KGF', 'Kolar', 'Koratagere', 'Kunigal', 'Madhugiri', 'Malur',
-    'Molakalmuru', 'Mulbagal', 'Pavagada', 'Shidlaghatta', 'Sira', 'Srinivaspur',
-    'Tiptur', 'Tumkur City', 'Tumkur Rural', 'Turuvekere'
-  ],
-  acs: [
-    'Bagepalli', 'Bangarapet', 'Challakere', 'Chikkaballapur', 'Chintamani',
-    'Chitradurga', 'Davanagere North', 'Davanagere South', 'Gauribidanur',
-    'Harihar', 'Hiriyur', 'Hosadurga', 'KGF', 'Kolar', 'Madhugiri',
-    'Malur', 'Pavagada', 'Sidlaghatta', 'Sira', 'Srinivaspur', 'Tumkur City', 'Tumkur Rural'
-  ],
-  parts: Array.from({ length: 151 }, (_, i) => String(i + 1)),
-  districtAcs: {
-    Tumkur: ['Tumkur City', 'Tumkur Rural', 'Madhugiri', 'Sira', 'Pavagada'],
-    Chitradurga: ['Chitradurga', 'Challakere', 'Hiriyur', 'Hosadurga'],
-    Kolar: ['Kolar', 'KGF', 'Bangarapet', 'Malur', 'Srinivaspur'],
-    Davanagere: ['Davanagere North', 'Davanagere South', 'Harihar'],
-    Chikkaballapura: ['Chikkaballapur', 'Gauribidanur', 'Bagepalli', 'Sidlaghatta', 'Chintamani'],
-  },
-};
-
 // In-memory cache for facet options pre-seeded with verified data
 let cachedFacets: SearchFacets | null = VERIFIED_FACETS;
-let cacheExpiresAt = Date.now() + 5 * 60 * 1000;
+let cacheExpiresAt = Date.now() + 60 * 60 * 1000; // 1 hour TTL
 
 export async function GET(request: NextRequest) {
   const now = Date.now();
   if (cachedFacets && now < cacheExpiresAt) {
-    return NextResponse.json(cachedFacets);
+    return NextResponse.json(cachedFacets, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+      },
+    });
   }
 
   try {
