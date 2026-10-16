@@ -86,8 +86,8 @@ function SearchPageContent() {
   };
 
   const handleSelectElector = (elector: SearchResultRow) => {
-    // Open the official Voter Information Slip directly on mobile & desktop tap
-    setSelectedElectorForSlip(elector);
+    // Open the full Elector Detail Profile Card modal on tap
+    setSelectedElectorForDetail(elector);
   };
 
   const handleRequestCorrectionFromSlip = () => {
