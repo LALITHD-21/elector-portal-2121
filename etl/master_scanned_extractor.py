@@ -72,19 +72,42 @@ def extract_scanned_page(page, dpi=150):
             'xcenter': xcenter, 'ycenter': ycenter, 'text': t_clean
         })
 
-    # Find serial number markers (xcenter < w * 0.08)
-    sno_col_max = w * 0.08
-    serial_boxes = []
+    # Find serial number markers (xcenter < w * 0.09) with vertical fragment stitching
+    sno_col_max = w * 0.09
+    raw_sno_items = []
     for b in data_boxes:
         if b['xcenter'] < sno_col_max:
-            m = re.search(r'#?\s*(\d{1,6})\b', b['text'])
-            if m:
-                serial_boxes.append({
-                    'sno': int(m.group(1)),
-                    'y': b['ycenter']
-                })
+            raw_sno_items.append(b)
 
-    serial_boxes.sort(key=lambda s: s['y'])
+    raw_sno_items.sort(key=lambda b: b['ycenter'])
+    serial_boxes = []
+    idx = 0
+    while idx < len(raw_sno_items):
+        cur = raw_sno_items[idx]
+        cur_t = cur['text'].replace('#', '').strip()
+        
+        # Check if next box is a wrapped continuation (e.g. '#102' and '3' -> '1023')
+        if idx + 1 < len(raw_sno_items):
+            nxt = raw_sno_items[idx + 1]
+            if (nxt['ycenter'] - cur['ycenter']) < 45:
+                nxt_t = nxt['text'].replace('#', '').strip()
+                if cur_t.isdigit() and nxt_t.isdigit():
+                    combined_sno = int(cur_t + nxt_t)
+                    serial_boxes.append({
+                        'sno': combined_sno,
+                        'y': (cur['ycenter'] + nxt['ycenter']) / 2.0
+                    })
+                    idx += 2
+                    continue
+                    
+        m = re.search(r'(\d{1,6})\b', cur_t)
+        if m:
+            serial_boxes.append({
+                'sno': int(m.group(1)),
+                'y': cur['ycenter']
+            })
+        idx += 1
+
     clean_serials = []
     for s in serial_boxes:
         if not clean_serials or abs(s['y'] - clean_serials[-1]['y']) > 30:
