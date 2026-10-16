@@ -206,3 +206,19 @@ The ETL is designed to be re-run at any time:
 - **Corrected data:** Re-run with updated source files. The upsert updates changed fields.
 - **Schema changes:** If the schema changes, update `schema.sql`, run it in Supabase SQL Editor, then re-run ETL.
 - **Full reset:** To start fresh, `TRUNCATE TABLE electors;` in SQL Editor, then run ETL.
+
+---
+
+## 10. Zero-Drop PDF Electoral Roll Re-Extraction & Recovery Architecture
+
+### Root Cause Analysis
+During comprehensive cross-audit between original Karnataka Electoral Roll PDFs, Adobe OCR converted Excels, and the Supabase database:
+- **Adobe OCR Drop Issue:** Adobe OCR silently dropped whole multi-page table supplements (e.g. In Part 112, Adobe stopped exporting at Page 282, dropping pages 283–687 entirely).
+- **Search Logic Inconsistencies:** Search was failing on valid 7–13 character EPICs, zero-padded variants (`WWS579886` vs `WWS0579886`), and numeric serial inputs (`347`, `103 347`).
+
+### Re-Extraction & Recovery Workflow
+1. **PyMuPDF Spatial Grid Clustering:** Scans raw PDF text layers and spatial bounding boxes (`words`), segmenting voter rows by horizontal Y-bands and vertical columns (Serial, Name, Relative, Address, Age, Sex, EPIC).
+2. **Sequential Serial Verification:** Validates that voters increment sequentially $1..N$ within each booth, detecting OCR artifacts on serial numbers.
+3. **Strict Validation & Quarantine:** Records strictly matching `^[A-Z]{3}\d{7}$` with valid non-address names are classified as `new_valid`. Ambiguous OCR values are placed in `quarantine_review.xlsx` with suggested corrections and page references.
+4. **Controlled Transactional Insert:** Uses `ON CONFLICT (epic_number) DO NOTHING` with `batch_recovery_<timestamp>` provenance tags, ensuring 100% idempotency.
+5. **Search Proof Verification:** Every inserted EPIC is verified against the live `/api/search` production endpoint, guaranteeing 0 not-found electors.
