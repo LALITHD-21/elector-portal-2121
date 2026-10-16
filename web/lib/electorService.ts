@@ -48,7 +48,7 @@ export async function getElectorByEpic(rawEpic: string): Promise<{
   if (!epic || !isValidEpic(epic)) {
     return {
       elector: null,
-      error: 'Invalid EPIC format. Expected 3 letters + 7 digits (e.g. TYA0633792).',
+      error: 'Invalid EPIC format. Expected voter ID format (e.g. TYA0633792 or WWS579886).',
       fromCache: false,
       durationMs: 0,
     };

@@ -66,10 +66,35 @@ export async function GET(request: NextRequest) {
     const normalizedEpic = normalizeEpic(trimmedQ);
 
     if (isValidEpic(normalizedEpic)) {
-      query = query.eq('epic_number', normalizedEpic);
+      const variants = [normalizedEpic];
+      const m6 = normalizedEpic.match(/^([A-Z]{2,4})(\d{6})$/);
+      if (m6) variants.push(`${m6[1]}0${m6[2]}`);
+      const m7 = normalizedEpic.match(/^([A-Z]{2,4})0(\d{6})$/);
+      if (m7) variants.push(`${m7[1]}${m7[2]}`);
+
+      if (variants.length > 1) {
+        query = query.in('epic_number', variants);
+      } else {
+        query = query.eq('epic_number', normalizedEpic);
+      }
     } else if (/^\d{10}$/.test(trimmedQ) || (mobile && /^\d{10}$/.test(mobile))) {
       const phoneDigits = /^\d{10}$/.test(trimmedQ) ? trimmedQ : mobile.replace(/\D/g, '');
       query = query.ilike('whatsapp_mob', `%${phoneDigits}%`);
+    } else if (/^(?:part|booth)?\s*(\d{1,4})\s*[\s/,-]+\s*(?:serial|sl|s#?|no\.?)?\s*(\d{1,4})$/i.test(trimmedQ)) {
+      const m = trimmedQ.match(/^(?:part|booth)?\s*(\d{1,4})\s*[\s/,-]+\s*(?:serial|sl|s#?|no\.?)?\s*(\d{1,4})$/i)!;
+      query = query.eq('part_number', m[1]).eq('serial_number', parseInt(m[2], 10));
+    } else if (/^(?:serial|sl|s#?|no\.?|#)\s*(\d{1,5})$/i.test(trimmedQ)) {
+      const m = trimmedQ.match(/^(?:serial|sl|s#?|no\.?|#)\s*(\d{1,5})$/i)!;
+      const extractedSerial = parseInt(m[1], 10);
+      if (part) {
+        query = query.eq('part_number', part).eq('serial_number', extractedSerial);
+      } else {
+        query = query.eq('serial_number', extractedSerial);
+      }
+    } else if (/^\d{1,5}$/.test(trimmedQ) && part) {
+      query = query.eq('serial_number', parseInt(trimmedQ, 10));
+    } else if (/^\d{1,5}$/.test(trimmedQ)) {
+      query = query.or(`serial_number.eq.${parseInt(trimmedQ, 10)},name.ilike.%${safeQ}%`);
     } else if (safeRel.length > 0) {
       if (safeQ.length > 0) {
         query = query.ilike('name', `%${safeQ}%`).ilike('relative_name', `%${safeRel}%`);

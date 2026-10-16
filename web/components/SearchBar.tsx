@@ -53,7 +53,7 @@ export default function SearchBar({
     }
 
     if (!isValidEpic(normalized)) {
-      setError('Invalid EPIC format. Expected 3 letters + 7 digits (e.g. TYA0633792).');
+      setError('Invalid EPIC format. Expected voter ID format (e.g. TYA0633792 or WWS579886).');
       return;
     }
 
@@ -70,13 +70,13 @@ export default function SearchBar({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     const normalized = normalizeEpic(raw);
-    const trimmed = normalized.slice(0, 10);
+    const trimmed = normalized.slice(0, 14);
     setQuery(trimmed);
 
     if (error) setError(null);
 
-    // Prefetch and auto-search when 10 valid chars reached
-    if (trimmed.length === 10 && isValidEpic(trimmed)) {
+    // Prefetch and auto-search when valid EPIC reached (typically 9-11 chars)
+    if (trimmed.length >= 8 && isValidEpic(trimmed)) {
       prefetchElectorByEpic(trimmed);
       if (trimmed !== lastSearchedRef.current) {
         executeSearch(trimmed);
@@ -101,8 +101,8 @@ export default function SearchBar({
     inputRef.current?.focus();
   };
 
-  const isComplete = query.length === 10;
   const isValid = isValidEpic(query);
+  const isComplete = isValid;
   const isCompact = size === 'compact';
 
   return (

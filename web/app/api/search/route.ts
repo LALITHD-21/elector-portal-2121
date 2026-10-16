@@ -176,12 +176,23 @@ export async function GET(request: NextRequest) {
     const safeQ = sanitizePostgrestTerm(trimmedQ);
     const safeRel = sanitizePostgrestTerm(trimmedRel);
 
-    // Mode A: Exact EPIC card number format (indexed 15ms lookup)
+    // Mode A: Exact EPIC card number format (indexed lookup, supports 7-13 char cards and 0-padded variants)
     if (isEpicQuery) {
       queryType = 'epic';
-      query = query.eq('epic_number', normalizedQEpic).limit(1);
+      const variants = [normalizedQEpic];
+      const m6 = normalizedQEpic.match(/^([A-Z]{2,4})(\d{6})$/);
+      if (m6) variants.push(`${m6[1]}0${m6[2]}`);
+      const m7 = normalizedQEpic.match(/^([A-Z]{2,4})0(\d{6})$/);
+      if (m7) variants.push(`${m7[1]}${m7[2]}`);
+
+      if (variants.length > 1) {
+        query = query.in('epic_number', variants);
+      } else {
+        query = query.eq('epic_number', normalizedQEpic);
+      }
+      query = query.limit(20);
     }
-    // Mode B: 10-digit Mobile number
+    // Mode B1: 10-digit Mobile number
     else if (
       /^\d{10}$/.test(trimmedQ) ||
       (mobile && /^\d{10}$/.test(mobile.replace(/\D/g, '')))
@@ -192,6 +203,35 @@ export async function GET(request: NextRequest) {
         : mobile.replace(/\D/g, '');
       // Match on sanitized whatsapp_mob
       query = query.ilike('whatsapp_mob', `%${phoneDigits}%`);
+    }
+    // Mode B2: Compound Booth + Serial query (e.g. "103 347", "103/347", "Part 103 Serial 347", "Booth 103 - 347")
+    else if (/^(?:part|booth)?\s*(\d{1,4})\s*[\s/,-]+\s*(?:serial|sl|s#?|no\.?)?\s*(\d{1,4})$/i.test(trimmedQ)) {
+      queryType = 'booth';
+      const m = trimmedQ.match(/^(?:part|booth)?\s*(\d{1,4})\s*[\s/,-]+\s*(?:serial|sl|s#?|no\.?)?\s*(\d{1,4})$/i)!;
+      const extractedPart = m[1];
+      const extractedSerial = parseInt(m[2], 10);
+      query = query.eq('part_number', extractedPart).eq('serial_number', extractedSerial);
+    }
+    // Mode B3: Explicit Serial Number query (e.g. "Serial 347", "sl 347", "#347", "S# 347")
+    else if (/^(?:serial|sl|s#?|no\.?|#)\s*(\d{1,5})$/i.test(trimmedQ)) {
+      queryType = 'booth';
+      const m = trimmedQ.match(/^(?:serial|sl|s#?|no\.?|#)\s*(\d{1,5})$/i)!;
+      const extractedSerial = parseInt(m[1], 10);
+      if (part) {
+        query = query.eq('part_number', part).eq('serial_number', extractedSerial);
+      } else {
+        query = query.eq('serial_number', extractedSerial);
+      }
+    }
+    // Mode B4: Numeric Serial entered with Booth/Part filter selected (e.g. part="103" and q="347")
+    else if (/^\d{1,5}$/.test(trimmedQ) && part) {
+      queryType = 'booth';
+      query = query.eq('serial_number', parseInt(trimmedQ, 10));
+    }
+    // Mode B5: Standalone numeric serial (e.g. q="347" without part filter)
+    else if (/^\d{1,5}$/.test(trimmedQ)) {
+      queryType = 'booth';
+      query = query.or(`serial_number.eq.${parseInt(trimmedQ, 10)},name.ilike.%${safeQ}%`);
     }
     // Mode C1: Dedicated Relative / Father / Husband Name search entered
     else if (safeRel.length > 0) {
