@@ -185,24 +185,51 @@ def parse_special_file(fpath):
                 elif 'epic' in ct: col_map.setdefault('epic', c_i)
             break
 
-    if not h_idx or 'name' not in col_map:
-        wb.close()
-        return []
-
     records_map = {}
     current_serial = 0
     row_idx = 0
+    in_deletions = False
 
-    for r in ws.iter_rows(min_row=h_idx + 1, values_only=True):
+    for r in ws.iter_rows(min_row=1, values_only=True):
         if not r or not any(r): continue
-        row_idx += 1
         txt = ' '.join([str(c) for c in r if c is not None]).lower()
-        if 'total number' in txt or 'supplement' in txt: break
-        if 'name of the elector' in txt or 'sl no' in txt: continue
+
+        # Track deletion vs addition supplement sections
+        if 'deletions list' in txt or 'iii. deletions' in txt:
+            in_deletions = True
+            continue
+        if 'additions list' in txt or 'ii. additions' in txt:
+            in_deletions = False
+            continue
+        if in_deletions:
+            continue
+
+        # Dynamic sub-header detection for supplements
+        if 'name of the elector' in txt:
+            col_map = {}
+            for c_i, cell in enumerate(r):
+                if not cell: continue
+                ct = str(cell).strip().lower()
+                if any(k in ct for k in ['sino', 'sl no', 'slno', 'serial']): col_map.setdefault('serial', c_i)
+                elif 'name of the elector' in ct: col_map.setdefault('name', c_i)
+                elif any(k in ct for k in ['father', 'mother', 'husband', 'relative']): col_map.setdefault('relative', c_i)
+                elif 'address' in ct: col_map.setdefault('address', c_i)
+                elif 'qualification' in ct: col_map.setdefault('qualification', c_i)
+                elif 'occupation' in ct: col_map.setdefault('occupation', c_i)
+                elif 'age' in ct: col_map.setdefault('age', c_i)
+                elif 'sex' in ct or 'gender' in ct: col_map.setdefault('sex', c_i)
+                elif 'epic' in ct: col_map.setdefault('epic', c_i)
+            continue
+
+        if not col_map or 'name' not in col_map:
+            continue
 
         name_c = col_map.get('name')
         name = clean_text(r[name_c]) if (name_c is not None and name_c < len(r)) else None
-        if not name or name.lower() == 'name of the elector': continue
+        if not name or name.lower() in ['name', 'name of the elector', 'elector name']:
+            continue
+
+        row_idx += 1
 
         serial_c = col_map.get('serial')
         raw_serial = r[serial_c] if (serial_c is not None and serial_c < len(r)) else None
