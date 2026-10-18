@@ -70,3 +70,6 @@ new file/
 etl/reports/
 
 112_1791587543.pdf.pdf.xlsx
+
+# Heavy raw Excel voter files (>10MB)
+voter/
