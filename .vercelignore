@@ -1,0 +1,17 @@
+# Ignore big data assets from Vercel deployments
+*.xlsx
+*.csv
+*.pdf
+*.png
+etl/
+output/
+voter/
+poling addres/
+new file/
+new poling addres/
+excle-formate/
+public only view refernce photo/
+supabase-secounnd/
+.git
+.github
+docs/
